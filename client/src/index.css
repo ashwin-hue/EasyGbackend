@@ -1,5 +1,5 @@
 :root {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "Space Grotesk", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   line-height: 1.5;
   font-weight: 400;
   color: #1a1a1a;
@@ -23,4 +23,158 @@ body,
 
 body {
   min-height: 100vh;
+  background: radial-gradient(circle at 12% 20%, rgba(213, 92, 47, 0.12), transparent 24%),
+              radial-gradient(circle at 82% 10%, rgba(16, 185, 129, 0.12), transparent 20%),
+              radial-gradient(circle at 72% 82%, rgba(31, 36, 48, 0.08), transparent 30%),
+              #f7f4ef;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  color: var(--landing-ink, #1f2430);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.brand-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #d55c2f, #b4491f);
+  box-shadow: 0 0 12px rgba(213, 92, 47, 0.35);
+}
+
+.nav-tabs {
+  display: inline-flex;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(31, 36, 48, 0.1);
+  padding: 6px;
+  border-radius: 14px;
+  box-shadow: 0 8px 20px rgba(31, 36, 48, 0.08);
+}
+
+.tab {
+  background: transparent;
+  color: var(--landing-ink, #1f2430);
+  border: none;
+  padding: 8px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.tab.active {
+  background: var(--landing-primary, #d55c2f);
+  color: #fff;
+}
+
+.session-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(31, 36, 48, 0.1);
+  padding: 6px 10px;
+  border-radius: 12px;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(31, 36, 48, 0.08);
+  border-radius: 16px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 20px 60px rgba(31, 36, 48, 0.12);
+}
+
+.site-footer {
+  margin-top: auto;
+  padding: 28px 20px 36px;
+  color: #1f2430;
+  background: #0f172a;
+  color: #e8edf7;
+}
+
+.site-footer .footer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  align-items: center;
+}
+
+.site-footer .brand {
+  color: #e8edf7;
+}
+
+.site-footer .tiny {
+  color: #9fb2d8;
+  font-size: 0.9rem;
+  margin: 0.35rem 0;
+}
+
+.footer-badges {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.pill {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #0f172a;
+  background: #e8edf7;
+}
+
+.pill-green { background: #d1fae5; color: #065f46; }
+.pill-amber { background: #fef3c7; color: #92400e; }
+.pill-blue  { background: #e0f2fe; color: #1d4ed8; }
+
+.footer-links {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  align-items: center;
+}
+
+.palette-row {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  display: inline-block;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.swatch-amber { background: linear-gradient(135deg, #d55c2f, #f59e0b); }
+.swatch-ink { background: #1f2430; }
+.swatch-green { background: #10b981; }
+.swatch-cream { background: #f4efe7; border-color: rgba(0,0,0,0.06); }
+
+.footer-meta {
+  text-align: right;
 }

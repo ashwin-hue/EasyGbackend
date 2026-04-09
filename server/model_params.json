@@ -1,0 +1,104 @@
+{
+  "numeric_features": [
+    "age",
+    "trestbps",
+    "chol",
+    "thalch",
+    "oldpeak",
+    "ca"
+  ],
+  "categorical_features": {
+    "sex": [
+      "Female",
+      "Male"
+    ],
+    "cp": [
+      "asymptomatic",
+      "atypical angina",
+      "non-anginal",
+      "typical angina"
+    ],
+    "fbs": [
+      false,
+      true
+    ],
+    "restecg": [
+      "lv hypertrophy",
+      "normal",
+      "st-t abnormality"
+    ],
+    "exang": [
+      false,
+      true
+    ],
+    "slope": [
+      "downsloping",
+      "flat",
+      "upsloping"
+    ],
+    "thal": [
+      "fixed defect",
+      "normal",
+      "reversable defect"
+    ]
+  },
+  "feature_names": [
+    "age",
+    "trestbps",
+    "chol",
+    "thalch",
+    "oldpeak",
+    "ca",
+    "sex__Female",
+    "sex__Male",
+    "cp__asymptomatic",
+    "cp__atypical angina",
+    "cp__non-anginal",
+    "cp__typical angina",
+    "fbs__False",
+    "fbs__True",
+    "restecg__lv hypertrophy",
+    "restecg__normal",
+    "restecg__st-t abnormality",
+    "exang__False",
+    "exang__True",
+    "slope__downsloping",
+    "slope__flat",
+    "slope__upsloping",
+    "thal__fixed defect",
+    "thal__normal",
+    "thal__reversable defect"
+  ],
+  "coef": [
+    -0.01645680743793183,
+    0.020880622409430002,
+    0.0038442564116302324,
+    -0.021695136134941877,
+    0.33090220241595797,
+    1.187068970545258,
+    -0.783827120349259,
+    0.5283065014079259,
+    0.9676000273602073,
+    0.12012506335265939,
+    -0.6495121021284906,
+    -0.6937336075239832,
+    0.12193206876888127,
+    -0.37745268770994306,
+    0.058511017857889334,
+    -0.37521185814440167,
+    0.06118022134461069,
+    -0.4532070602953341,
+    0.19768644135443264,
+    -0.120736275855361,
+    0.40740286343316073,
+    -0.542187206518889,
+    -0.4056250516409847,
+    -0.585063422978026,
+    0.7351678556799671
+  ],
+  "intercept": -0.49289721604530656,
+  "metrics": {
+    "accuracy_train": 0.8695652173913043,
+    "f1_train": 0.8550185873605948
+  }
+}

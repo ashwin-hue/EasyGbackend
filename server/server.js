@@ -2,6 +2,47 @@ const express = require("express")
 const mongoose = require("mongoose")
 const cors = require("cors")
 const dotenv = require("dotenv")
+const { spawn } = require("child_process")
+const path = require("path")
+const { predictProbability } = require("./model/predict")
+
+// ── Python helpers ─────────────────────────────────────────────────────────
+const ML_DIR = path.join(__dirname, "..", "ml")
+
+/**
+ * Run a Python script and return its stdout as parsed JSON.
+ * @param {string} script  — filename in ml/ directory
+ * @param {string[]} args  — CLI args (e.g. ["--json"])
+ * @param {string} stdin   — optional JSON string to pipe into stdin
+ */
+function runPython(script, args = [], stdin = null) {
+  return new Promise((resolve, reject) => {
+    const scriptPath = path.join(ML_DIR, script)
+    const child = spawn("python", [scriptPath, ...args])
+
+    let stdout = ""
+    let stderr = ""
+
+    child.stdout.on("data", d => (stdout += d.toString()))
+    child.stderr.on("data", d => (stderr += d.toString()))
+
+    child.on("close", code => {
+      if (code !== 0) {
+        return reject(new Error(`Python exited ${code}: ${stderr.slice(0, 400)}`))
+      }
+      try {
+        resolve(JSON.parse(stdout))
+      } catch {
+        reject(new Error(`Python stdout not valid JSON: ${stdout.slice(0, 200)}`))
+      }
+    })
+
+    if (stdin) {
+      child.stdin.write(stdin)
+      child.stdin.end()
+    }
+  })
+}
 
 dotenv.config()
 
@@ -61,6 +102,23 @@ const esp32DataSchema = new mongoose.Schema(
 const ESP32Data = mongoose.models.ESP32Data || mongoose.model("ESP32Data", esp32DataSchema)
 
 // ============================================
+// DIAGNOSIS SCHEMA (NEW)
+// ============================================
+const diagnosisSchema = new mongoose.Schema(
+  {
+    patient: { type: Object, required: true },
+    heartRate: { type: Number, default: null },
+    probability: { type: Number, required: true },
+    riskLabel: { type: Number, required: true },
+    waveformPreview: { type: [Number], default: [] },
+  },
+  { timestamps: true }
+)
+
+const Diagnosis =
+  mongoose.models.Diagnosis || mongoose.model("Diagnosis", diagnosisSchema)
+
+// ============================================
 // HELPER FUNCTIONS
 // ============================================
 function serializeUser(user) {
@@ -79,6 +137,65 @@ function serializeUser(user) {
     smoking_status: user.smoking_status,
     diabetes: user.diabetes,
   }
+}
+
+function normalizeValue(value) {
+  if (value === undefined || value === null) return value
+  if (typeof value === "string") return value.trim()
+  return value
+}
+
+function toBoolean(value) {
+  if (typeof value === "boolean") return value
+  if (typeof value === "number") return value !== 0
+  if (typeof value === "string") {
+    const v = value.trim().toLowerCase()
+    if (["yes", "true", "1"].includes(v)) return true
+    if (["no", "false", "0"].includes(v)) return false
+  }
+  return null
+}
+
+function mapPatientToModelFeatures(payload = {}, heartRateFallback = null) {
+  const normalized = Object.fromEntries(
+    Object.entries(payload || {}).map(([k, v]) => [k, normalizeValue(v)])
+  );
+
+  // Helper for cp mapping
+  const getCp = (val) => {
+    const v = String(val).toLowerCase();
+    if (v === "1" || v === "typical angina") return "typical angina";
+    if (v === "2" || v === "atypical angina") return "atypical angina";
+    if (v === "3" || v === "non-anginal pain" || v === "non-anginal") return "non-anginal";
+    return "asymptomatic"; // 4 or anything else
+  };
+
+  // Helper for thal mapping
+  const getThal = (val) => {
+    const v = String(val).toLowerCase();
+    if (v === "1" || v === "normal") return "normal";
+    if (v === "2" || v === "fixed defect") return "fixed defect";
+    if (v === "3" || v === "reversable defect" || v === "reversible defect") return "reversable defect";
+    return "normal";
+  };
+
+  const modelInput = {
+    age: Number(normalized.age) || 50,
+    sex: String(normalized.sex) === "0" ? "Female" : (String(normalized.sex) === "1" ? "Male" : (normalized.sex === "Female" ? "Female" : "Male")),
+    cp: getCp(normalized.chest_pain_type),
+    trestbps: Number(normalized.resting_blood_pressure) || 120,
+    chol: Number(normalized.serum_cholesterol) || 200,
+    fbs: toBoolean(normalized.fasting_blood_sugar),
+    restecg: "normal", // Forced to normal as per instructions
+    thalch: Number(normalized.max_heart_rate || 150), // Responsive to simulated heart rate variations
+    exang: toBoolean(normalized.exercise_induced_angina ?? normalized.exercise_angina ?? false),
+    oldpeak: 0, // Forced to normal
+    slope: "flat", // Forced to normal
+    ca: Number(normalized.number_of_major_vessels ?? normalized.ca ?? 0),
+    thal: getThal(normalized.thalassemia || normalized.thal),
+  };
+
+  return modelInput;
 }
 
 // ============================================
@@ -286,6 +403,138 @@ app.get("/api/esp32/data/:deviceId", async (req, res) => {
   }
 })
 
+// POST endpoint for heart disease prediction
+app.post("/api/diagnosis", async (req, res) => {
+  try {
+    const { patient, waveform = [], heartRate = null } = req.body || {}
+
+    if (!patient || typeof patient !== "object") {
+      return res.status(400).json({ message: "Patient payload is required." })
+    }
+
+    const modelInput = mapPatientToModelFeatures(patient, heartRate)
+    const missingNumeric = Object.entries(modelInput).filter(
+      ([key, value]) => typeof value === "number" && Number.isNaN(value)
+    )
+    if (missingNumeric.length) {
+      return res.status(400).json({
+        message: "Some required numeric fields are missing or invalid.",
+        details: missingNumeric.map(([k]) => k),
+      })
+    }
+
+    // Rule-based overrides
+    const isTruthy = (v) =>
+      v === true || v === 1 || v === "1" || v === "yes" || v === "true" || v === "Yes" || v === "True"
+    const isFalsy = (v) =>
+      v === false || v === 0 || v === "0" || v === "no" || v === "false" || v === "No" || v === "False"
+
+    const hasHighSugar = isTruthy(modelInput.fbs)
+    const hasChestPain = Boolean(modelInput.cp && modelInput.cp !== "asymptomatic" && modelInput.cp !== "0")
+    const hasExercisePain = isTruthy(modelInput.exang)
+    const isSmoker = isTruthy(modelInput.smoking_status)
+    const hasDiabetes = isTruthy(modelInput.diabetes)
+    const hasVesselNarrowing =
+      modelInput.ca !== undefined &&
+      modelInput.ca !== null &&
+      Number(modelInput.ca) !== 0 &&
+      !Number.isNaN(Number(modelInput.ca))
+
+    const highRiskCriteria =
+      hasHighSugar && hasChestPain && hasExercisePain && isSmoker && hasDiabetes && hasVesselNarrowing
+
+    const cleanProfile =
+      isFalsy(modelInput.fbs) &&
+      !hasChestPain &&
+      !hasExercisePain &&
+      !isSmoker &&
+      !hasDiabetes &&
+      (Number(modelInput.ca) === 0 || modelInput.ca === undefined || modelInput.ca === null)
+
+    // Model prediction (default)
+    let result = predictProbability(modelInput)
+
+    // High-risk override (70–85%)
+    if (highRiskCriteria) {
+      const forcedProb = 0.7 + Math.random() * 0.15
+      result = {
+        ...result,
+        probability: forcedProb,
+        riskLabel: 1,
+        logit: Math.log(forcedProb / (1 - forcedProb)),
+      }
+    }
+
+    // Clean profile override (force low/normal)
+    if (cleanProfile) {
+      const forcedProb = 0.05 + Math.random() * 0.05 // 5–10%
+      result = {
+        ...result,
+        probability: forcedProb,
+        riskLabel: 0,
+        logit: Math.log(forcedProb / (1 - forcedProb)),
+      }
+    }
+
+    const summary = {
+      probability: Number(result.probability.toFixed(3)),
+      riskLabel: result.riskLabel,
+      interpretation:
+        result.probability >= 0.7
+          ? `High risk: Your risk score is ${Math.round(result.probability * 100)}%. This means there is a high probability of heart disease based on your provided health inputs. Please consult a cardiologist immediately.`
+          : result.probability >= 0.5
+            ? `Elevated risk: Your risk score is ${Math.round(result.probability * 100)}%. You have a moderate chance of heart problems based on your health inputs. Please schedule a clinical follow-up soon.`
+            : `Low risk: Your risk score is ${Math.round(result.probability * 100)}%. You currently have a very low probability of heart disease. Keep maintaining your health and regular checkups.`,
+    }
+
+    const record = await Diagnosis.create({
+      patient: modelInput,
+      heartRate: heartRate ? Number(heartRate) : null,
+      probability: summary.probability,
+      riskLabel: summary.riskLabel,
+      waveformPreview: Array.isArray(waveform) ? waveform.slice(0, 256).map(Number) : [],
+    })
+
+    return res.json({
+      message: "Prediction computed.",
+      diagnosis: summary,
+      storedId: record._id,
+    })
+  } catch (error) {
+    return res.status(500).json({ message: "Unable to compute prediction.", error: error.message })
+  }
+})
+// ============================================
+// NEW PYTHON INTEGRATION ROUTES
+// ============================================
+
+app.get("/api/ecg/stream", async (req, res) => {
+  try {
+    const data = await runPython("ecg_stream.py")
+    return res.json(data)
+  } catch (err) {
+    return res.status(500).json({ error: err.message })
+  }
+})
+
+app.post("/api/explain", async (req, res) => {
+  try {
+    const { patient, probability } = req.body
+    if (!patient) return res.status(400).json({ error: "patient object required" })
+
+    // Map raw frontend patient data into standardized model feature keys,
+    // including the hardcoded normal ECG inputs as specified by the user.
+    const mappedPatient = mapPatientToModelFeatures(patient, patient.max_heart_rate)
+
+    // Need explainability results and recommendations results
+    const explainData = await runPython("explainability.py", ["--json"], JSON.stringify(mappedPatient))
+    const recData = await runPython("recommendations.py", ["--json"], JSON.stringify({ patient, probability: probability || 0.5 }))
+    
+    return res.json({ explanation: explainData, recommendations: recData })
+  } catch (err) {
+    return res.status(500).json({ error: err.message })
+  }
+})
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`)

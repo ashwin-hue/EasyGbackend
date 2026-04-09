@@ -214,7 +214,7 @@ function renderField(question, value, onChange) {
   );
 }
 
-function Login() {
+function Login({ onAuth }) {
   const [activePanel, setActivePanel] = useState("signup");
   const [signupStep, setSignupStep] = useState(0);
   const [loginData, setLoginData] = useState(initialLoginData);
@@ -402,6 +402,7 @@ function Login() {
         setCurrentUser(payload.user || null);
         setSubmittedMode("signup");
         setSignupStatus(payload.message || "Account created successfully.");
+        onAuth?.(payload.user || null);
       } catch (error) {
         setSignupError(error.message);
       } finally {
@@ -434,6 +435,7 @@ function Login() {
       setCurrentUser(payload.user || null);
       setSubmittedMode("login");
       setLoginStatus(payload.message || "Login successful.");
+      onAuth?.(payload.user || null);
     } catch (error) {
       setLoginError(error.message);
     } finally {

@@ -1,0 +1,137 @@
+{
+  "created_at": "2026-04-08T04:20:33.368668Z",
+  "source_data": "D:\\saveetha_hackathon\\data\\heart_disease_uci.csv",
+  "target": "has_disease",
+  "classes": [
+    0,
+    1
+  ],
+  "metrics": {
+    "accuracy": 0.842391304347826,
+    "roc_auc": 0.9085365853658536,
+    "test_size": 184
+  },
+  "categorical_features": {
+    "sex": [
+      "Female",
+      "Male"
+    ],
+    "cp": [
+      "asymptomatic",
+      "atypical angina",
+      "non-anginal",
+      "typical angina"
+    ],
+    "fbs": [
+      false,
+      true
+    ],
+    "restecg": [
+      "lv hypertrophy",
+      "normal",
+      "st-t abnormality"
+    ],
+    "exang": [
+      false,
+      true
+    ],
+    "slope": [
+      "downsloping",
+      "flat",
+      "upsloping"
+    ],
+    "ca": [
+      0.0,
+      1.0,
+      2.0,
+      3.0
+    ],
+    "thal": [
+      "fixed defect",
+      "normal",
+      "reversable defect"
+    ]
+  },
+  "numeric_features": [
+    "age",
+    "trestbps",
+    "chol",
+    "thalch",
+    "oldpeak"
+  ],
+  "numeric_mean": [
+    53.59103260869565,
+    132.0828804347826,
+    201.5,
+    137.79347826086956,
+    0.8557065217391304
+  ],
+  "numeric_scale": [
+    9.359654166027306,
+    17.89249084559266,
+    108.46065956794216,
+    25.180722027272072,
+    1.0591962912679254
+  ],
+  "feature_names": [
+    "cat__sex_Female",
+    "cat__sex_Male",
+    "cat__cp_asymptomatic",
+    "cat__cp_atypical angina",
+    "cat__cp_non-anginal",
+    "cat__cp_typical angina",
+    "cat__fbs_False",
+    "cat__fbs_True",
+    "cat__restecg_lv hypertrophy",
+    "cat__restecg_normal",
+    "cat__restecg_st-t abnormality",
+    "cat__exang_False",
+    "cat__exang_True",
+    "cat__slope_downsloping",
+    "cat__slope_flat",
+    "cat__slope_upsloping",
+    "cat__ca_0.0",
+    "cat__ca_1.0",
+    "cat__ca_2.0",
+    "cat__ca_3.0",
+    "cat__thal_fixed defect",
+    "cat__thal_normal",
+    "cat__thal_reversable defect",
+    "num__age",
+    "num__trestbps",
+    "num__chol",
+    "num__thalch",
+    "num__oldpeak"
+  ],
+  "coefficients": [
+    -0.5852629911417103,
+    0.5864097046721206,
+    1.048902362160999,
+    -0.865990502917465,
+    -0.13820176711705842,
+    -0.043563378596058695,
+    -0.1960096502337736,
+    0.19715636376418771,
+    -0.08892798557297399,
+    -0.13086865105682766,
+    0.2209433501602113,
+    -0.5015879190672753,
+    0.5027346325976803,
+    -0.26219606618997643,
+    0.5433066358019574,
+    -0.2799638560815689,
+    -1.049062728305027,
+    0.19951146330776656,
+    0.4930204928426814,
+    0.35767748568498214,
+    -0.015476397805397203,
+    -0.3192317577421688,
+    0.3358548690779757,
+    0.2877338289905012,
+    0.07275016335010814,
+    -0.455214677246111,
+    -0.2674551912806855,
+    0.5151492681397374
+  ],
+  "intercept": 0.7201973107064686
+}

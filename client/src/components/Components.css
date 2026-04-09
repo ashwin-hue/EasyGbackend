@@ -1,0 +1,375 @@
+/* Combined CSS for new components */
+
+.minimal-panel {
+  background: var(--landing-surface-strong, #fffaf3);
+  border: 1px solid var(--landing-line, rgba(31, 36, 48, 0.1));
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: 0 12px 40px rgba(36, 28, 21, 0.08); /* slightly softer shadow than main panels */
+  font-family: inherit;
+}
+
+.m-header {
+  margin-bottom: 1rem;
+}
+
+.m-header h3 {
+  margin: 0 0 0.2rem;
+  font-size: 1.15rem;
+}
+
+.muted {
+  color: var(--landing-muted, #5d6471);
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.primary-sm, .ghost-sm {
+  padding: 0.5rem 0.8rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  border: 1px solid transparent;
+}
+
+.primary-sm {
+  background: linear-gradient(135deg, var(--landing-primary, #d55c2f), #b4491f);
+  color: #fff;
+  box-shadow: 0 6px 15px rgba(213, 92, 47, 0.2);
+}
+
+.primary-sm:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ghost-sm {
+  background: transparent;
+  border-color: var(--landing-line, rgba(31, 36, 48, 0.12));
+  color: var(--landing-ink, #1f2430);
+}
+
+/* ECG SIM PANEL */
+.ecg-sim-panel {
+  background: var(--landing-surface-strong, #fffaf3);
+  border: 1px solid var(--landing-line, rgba(31, 36, 48, 0.1));
+  border-radius: 16px;
+  padding: 1.25rem;
+  margin-top: 1rem;
+}
+
+.ecg-sim-panel .panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+.ecg-sim-panel .panel-header h2 {
+  margin: 0 0 0.2rem;
+  font-size: 1.25rem;
+}
+
+.ecg-display {
+  background: #fdfbf7;
+  border: 1px solid rgba(31, 36, 48, 0.08);
+  border-radius: 12px;
+  padding: 0.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.ecg-display svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 2px 4px rgba(var(--ecg-color), 0.2));
+}
+
+.empty-ecg {
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--landing-muted);
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+.ecg-stats-flex {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.ecg-stat {
+  display: flex;
+  flex-direction: column;
+}
+.ecg-stat.full-width {
+  width: 100%;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--landing-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+
+.stat-val {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-top: 0.1rem;
+}
+.stat-text {
+  font-size: 0.95rem;
+  margin-top: 0.2rem;
+}
+
+/* EXPLAIN PANEL */
+.explain-split {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+.explain-col {
+  flex: 1;
+  min-width: 250px;
+}
+.col-h {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.dot.red { background: #ef4444; }
+.dot.green { background: #10b981; }
+
+.impact-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.impact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  background: rgba(255,255,255,0.6);
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.04);
+}
+.impact-mag {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: #ef4444;
+  font-size: 0.85rem;
+  background: rgba(239, 68, 68, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.impact-mag.green {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+}
+.impact-text {
+  font-size: 0.9rem;
+  line-height: 1.3;
+}
+.explain-summary {
+  margin-top: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(0,0,0,0.05);
+  font-style: italic;
+  text-align: center;
+}
+
+/* PRIMARY RISK FACTOR BANNER */
+.primary-risk-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(239, 68, 68, 0.04));
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-left: 4px solid #ef4444;
+  border-radius: 10px;
+  padding: 0.85rem 1.1rem;
+}
+.primary-risk-icon {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+.primary-risk-text {
+  font-size: 0.95rem;
+  color: #1f2430;
+  font-weight: 500;
+}
+.primary-risk-text strong {
+  color: #dc2626;
+}
+.primary-risk-pct {
+  display: inline-block;
+  margin-left: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #dc2626;
+  background: rgba(239, 68, 68, 0.1);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+/* RECOMMENDATIONS PANEL */
+.rec-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+.rec-card {
+  display: flex;
+  gap: 0.8rem;
+  background: rgba(255,255,255,0.7);
+  padding: 0.8rem;
+  border-radius: 12px;
+  border: 1px solid rgba(31, 36, 48, 0.08); border-left: 3px solid var(--risk-color);
+}
+.rec-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+.rec-content strong {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--landing-ink);
+  margin-bottom: 0.2rem;
+}
+.rec-content p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--landing-muted);
+}
+.disclaimer {
+  font-size: 0.75rem;
+  color: #888;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+/* VITALS GRAPH */
+.vitals-charts {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+.vital-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.v-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+}
+.v-info strong { color: var(--landing-ink); }
+.v-info span { font-weight: 600; }
+
+.v-bar-track {
+  height: 12px;
+  background: rgba(0,0,0,0.04);
+  border-radius: 6px;
+  position: relative;
+  border: 1px solid rgba(0,0,0,0.02);
+}
+.v-normal-range {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px dashed rgba(16, 185, 129, 0.5);
+  border-top: none;
+  border-bottom: none;
+  z-index: 1;
+}
+.v-bar-fill {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  left: 2px;
+  border-radius: 4px;
+  z-index: 2;
+  transition: width 0.5s ease;
+}
+.v-marker {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 4px;
+  background: #fff;
+  border: 2px solid;
+  border-radius: 4px;
+  z-index: 3;
+  transform: translateX(-50%);
+  transition: left 0.5s ease;
+}
+
+.v-legend {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.8rem;
+  color: var(--landing-muted);
+  margin-top: 1.5rem;
+  justify-content: flex-end;
+}
+.l-item { display: flex; align-items: center; gap: 4px; }
+.l-box { width: 12px; height: 12px; border-radius: 2px; }
+.l-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+/* MODEL COMPARE */
+.eval-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+}
+.eval-table th {
+  text-align: left;
+  padding: 0.5rem;
+  border-bottom: 2px solid var(--landing-line);
+  color: var(--landing-muted);
+}
+.eval-table td {
+  padding: 0.5rem;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+.highlight-row {
+  background: rgba(213, 92, 47, 0.05);
+}
+.highlight-row td strong {
+  color: var(--landing-primary, #d55c2f);
+}
+.highlight-row td span {
+  font-size: 0.75rem;
+  background: var(--landing-primary);
+  color: white;
+  padding: 1px 4px;
+  border-radius: 4px;
+  margin-left: 4px;
+}
+.table-responsive {
+  overflow-x: auto;
+}
