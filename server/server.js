@@ -322,26 +322,29 @@ app.post("/api/esp32/data", async (req, res) => {
   try {
     const { value, heartRate, waveform, deviceId } = req.body
 
-    // Validate required fields
-    if (value === undefined || heartRate === undefined || !waveform || !Array.isArray(waveform)) {
+    // Validate required fields - value and heartRate are essential
+    if (value === undefined || heartRate === undefined) {
       return res.status(400).json({
-        message: "Missing required fields: value, heartRate, waveform (array)",
+        message: "Missing required fields: value, heartRate",
       })
     }
 
+    // If waveform is provided, use it; otherwise create an array with the single value
+    const waveformData = Array.isArray(waveform) ? waveform : [value]
+
     console.log("📊 [Data Received]")
-    console.log(`   Device ID: ${deviceId || "EASYG-001"}`)
+    console.log(`   Device ID: ${deviceId || "easyG"}`)
     console.log(`   Value: ${value}`)
     console.log(`   Heart Rate: ${heartRate} bpm`)
-    console.log(`   Waveform samples: ${waveform.length}`)
+    console.log(`   Waveform samples: ${waveformData.length}`)
     console.log(`   Timestamp: ${new Date().toISOString()}`)
 
     // Create and save ESP32 data to MongoDB
     const esp32Data = await ESP32Data.create({
       value: Number(value),
       heartRate: Number(heartRate),
-      waveform: waveform.map(v => Number(v)),
-      deviceId: deviceId || "EASYG-001",
+      waveform: waveformData.map(v => Number(v)),
+      deviceId: deviceId || "easyG",
     })
 
     console.log(`✅ Data saved to MongoDB with ID: ${esp32Data._id}\n`)
@@ -400,6 +403,59 @@ app.get("/api/esp32/data/:deviceId", async (req, res) => {
     return res
       .status(500)
       .json({ message: "Unable to retrieve ESP32 data.", error: error.message })
+  }
+})
+
+// GET endpoint for real-time ECG data (latest readings)
+app.get("/api/esp32/live", async (req, res) => {
+  try {
+    const timeRange = parseInt(req.query.timeRange) || 60 // Get last 60 seconds of data
+    const limit = parseInt(req.query.limit) || 100 // Max 100 records
+    const deviceId = req.query.deviceId || "easyG"
+    
+    const sinceTime = new Date(Date.now() - timeRange * 1000)
+    
+    const data = await ESP32Data.find({
+      deviceId: deviceId,
+      createdAt: { $gte: sinceTime }
+    }).sort({ createdAt: 1 }).limit(limit)
+
+    // Extract waveform points for graphing
+    const waveformPoints = []
+    const readings = []
+    
+    data.forEach((reading) => {
+      readings.push({
+        id: reading._id,
+        value: reading.value,
+        heartRate: reading.heartRate,
+        createdAt: reading.createdAt,
+        waveformLength: reading.waveform.length,
+      })
+      
+      // Add waveform points with timestamp
+      reading.waveform.forEach((point, index) => {
+        waveformPoints.push({
+          value: point,
+          timestamp: reading.createdAt,
+          index: index,
+        })
+      })
+    })
+
+    return res.json({
+      message: "Live ECG data retrieved successfully.",
+      timeRange: timeRange,
+      deviceId: deviceId,
+      dataPoints: data.length,
+      waveformPoints: waveformPoints.length,
+      readings: readings,
+      waveformPoints: waveformPoints,
+    })
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Unable to retrieve live data.", error: error.message })
   }
 })
 
