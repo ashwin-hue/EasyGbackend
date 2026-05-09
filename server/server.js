@@ -49,6 +49,7 @@ dotenv.config()
 const app = express()
 const PORT = process.env.PORT || 5000
 const DB_NAME = process.env.DB_NAME || "saveetha_hackathon"
+const ESP32_RETENTION_SECONDS = Number(process.env.ESP32_RETENTION_SECONDS || 20)
 const MONGO_URI =
   process.env.MONGO_URI ||
   "mongodb+srv://easygadmin:admin123@easyg.kkp1a7a.mongodb.net/?retryWrites=true&w=majority"
@@ -98,6 +99,9 @@ const esp32DataSchema = new mongoose.Schema(
   },
   { timestamps: true }
 )
+
+esp32DataSchema.index({ deviceId: 1, createdAt: -1 })
+esp32DataSchema.index({ createdAt: 1 })
 
 const ESP32Data = mongoose.models.ESP32Data || mongoose.model("ESP32Data", esp32DataSchema)
 
@@ -196,6 +200,17 @@ function mapPatientToModelFeatures(payload = {}, heartRateFallback = null) {
   };
 
   return modelInput;
+}
+
+async function cleanupOldESP32Data() {
+  const retentionCutoff = new Date(Date.now() - ESP32_RETENTION_SECONDS * 1000)
+  const result = await ESP32Data.deleteMany({
+    createdAt: { $lt: retentionCutoff },
+  })
+
+  if (result.deletedCount > 0) {
+    console.log(`🧹 Cleaned ${result.deletedCount} ESP32 samples older than ${ESP32_RETENTION_SECONDS}s`)
+  }
 }
 
 // ============================================
@@ -347,7 +362,14 @@ app.post("/api/esp32/data", async (req, res) => {
       deviceId: deviceId || "easyG",
     })
 
-    console.log(`✅ Data saved to MongoDB with ID: ${esp32Data._id}\n`)
+    const retentionCutoff = new Date(Date.now() - ESP32_RETENTION_SECONDS * 1000)
+    const cleanupResult = await ESP32Data.deleteMany({
+      deviceId: esp32Data.deviceId,
+      createdAt: { $lt: retentionCutoff },
+    })
+
+    console.log(`✅ Data saved to MongoDB with ID: ${esp32Data._id}`)
+    console.log(`   Cleaned old samples: ${cleanupResult.deletedCount}\n`)
 
     return res.status(201).json({
       message: "Data received and stored successfully.",
@@ -358,6 +380,8 @@ app.post("/api/esp32/data", async (req, res) => {
         heartRate: esp32Data.heartRate,
         waveformLength: esp32Data.waveform.length,
         createdAt: esp32Data.createdAt,
+        retentionSeconds: ESP32_RETENTION_SECONDS,
+        cleanedOldSamples: cleanupResult.deletedCount,
       },
     })
   } catch (error) {
@@ -595,4 +619,14 @@ app.post("/api/explain", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`)
   console.log(`📡 ESP32 data endpoint: POST http://localhost:${PORT}/api/esp32/data`)
+  console.log(`🧹 ESP32 retention window: ${ESP32_RETENTION_SECONDS} seconds`)
+
+  cleanupOldESP32Data().catch((error) => {
+    console.error("ESP32 startup cleanup failed:", error.message)
+  })
+  setInterval(() => {
+    cleanupOldESP32Data().catch((error) => {
+      console.error("ESP32 scheduled cleanup failed:", error.message)
+    })
+  }, ESP32_RETENTION_SECONDS * 1000)
 })
